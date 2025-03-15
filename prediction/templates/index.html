@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>House Price Prediction</title>
+    <style>
+        /* Global Styles */
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #f4f7f6;
+            color: #333;
+            margin: 0;
+            padding: 20px;
+        }
+        
+        h1, h2 {
+            color: #4CAF50;
+        }
+
+        h1 {
+            text-align: center;
+            font-size: 2.5em;
+            margin-bottom: 30px;
+        }
+
+        h2 {
+            text-align: center;
+            font-size: 1.5em;
+            margin-top: 20px;
+        }
+
+        /* Form Styles */
+        form {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #ffffff;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        label {
+            font-weight: bold;
+            margin: 10px 0 5px;
+            display: inline-block;
+        }
+
+        input, select {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 20px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+            font-size: 1em;
+        }
+
+        input[type="submit"] {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            font-size: 1.2em;
+            border-radius: 4px;
+            cursor: pointer;
+            width: 100%;
+            transition: background-color 0.3s ease;
+        }
+
+        input[type="submit"]:hover {
+            background-color: #45a049;
+        }
+
+        .error-messages {
+            color: red;
+            font-weight: bold;
+            margin-bottom: 20px;
+        }
+
+        /* Table Styles */
+        table {
+            width: 100%;
+            margin-top: 30px;
+            border-collapse: collapse;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        th, td {
+            padding: 12px;
+            text-align: center;
+            border: 1px solid #ddd;
+        }
+
+        th {
+            background-color: #4CAF50;
+            color: white;
+            font-weight: bold;
+        }
+
+        tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+
+        tr:hover {
+            background-color: #f1f1f1;
+        }
+
+        /* Responsive Styles */
+        @media (max-width: 768px) {
+            body {
+                padding: 10px;
+            }
+
+            h1 {
+                font-size: 2em;
+            }
+
+            form {
+                padding: 15px;
+            }
+
+            input[type="submit"] {
+                font-size: 1em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <h1>Predict House Price</h1>
+
+    {% if errors %}
+    <div class="error-messages">
+        <ul>
+            {% for error in errors %}
+                <li>{{ error }}</li>
+            {% endfor %}
+        </ul>
+    </div>
+    {% endif %}
+
+    <form action="/predict" method="POST">
+        <!-- Form fields for inputs -->
+        <label for="population">Population:</label>
+<input type="number" id="population" name="population" required value="{{ user_input.population if user_input else '' }}" min="0" oninput="validateNumericInput(this)">
+
+<label for="GDHI">GDHI (Gross Disposable Household Income):</label>
+<input type="number" id="GDHI" name="GDHI" required value="{{ user_input.GDHI if user_input else '' }}" min="0" oninput="validateNumericInput(this)">
+
+<label for="bank_rate">Bank Rate (%):</label>
+<input type="number" step="0.01" id="bank_rate" name="bank_rate" required value="{{ user_input.bank_rate if user_input else '' }}" oninput="validateNumericInput(this)">
+
+<label for="CPIH">CPIH:</label>
+<input type="number" step="0.01" id="CPIH" name="CPIH" required value="{{ user_input.CPIH if user_input else '' }}" min="0" oninput="validateNumericInput(this)">
+
+<label for="unemployment_rate">Unemployment Rate (%):</label>
+<input type="number" step="0.01" id="unemployment_rate" name="unemployment_rate" required value="{{ user_input.unemployment_rate if user_input else '' }}" min="0" oninput="validateNumericInput(this)">
+
+<label for="GDP">GDP:</label>
+<input type="number" id="GDP" name="GDP" required value="{{ user_input.GDP if user_input else '' }}" min="0" oninput="validateNumericInput(this)">
+
+<script>
+    // Function to ensure that only valid numeric values are entered
+    function validateNumericInput(inputElement) {
+        // Ensure the value entered is a valid number, reject anything that is not a number
+        if (isNaN(inputElement.value) || inputElement.value === '') {
+            inputElement.setCustomValidity('Please enter a valid number');
+        } else {
+            inputElement.setCustomValidity('');
+        }
+    }
+</script>
+
+
+
+        <label for="property_type">Property Type:</label>
+        <select id="property_type" name="property_type" required>
+            <option value="" disabled selected>Choose Property Type</option>
+            <option value="D">D</option>
+            <option value="S">S</option>
+            <option value="T">T</option>
+            <option value="F">F</option>
+            <option value="O">O</option>
+        </select>
+
+        <label for="old_new">Old/New:</label>
+        <select id="old_new" name="old_new" required>
+            <option value="" disabled selected>Choose</option>
+            <option value="Y">Y</option>
+            <option value="N">N</option>
+        </select>
+
+        <label for="duration">Duration:</label>
+        <select id="duration" name="duration" required>
+            <option value="" disabled selected>Choose</option>
+            <option value="F">F</option>
+            <option value="L">L</option>
+        </select>
+	
+	<label for="town_city">Town/City:</label>
+<input type="text" id="town_city" name="town_city" required placeholder="Enter Town/City" oninput="validateTownCity()">
+
+<p id="error_message" style="color:red; display:none;">Only alphabetic characters are allowed.<br></p>
+
+<script>
+    // Validate that only letters are entered
+    function validateTownCity() {
+        var inputValue = document.getElementById('town_city').value;
+        var errorMessage = document.getElementById('error_message');
+        
+        // Check if input contains any non-alphabetic characters
+        if (/[^a-zA-Z\s]/.test(inputValue)) {
+            errorMessage.style.display = 'inline'; // Show error message
+        } else {
+            errorMessage.style.display = 'none'; // Hide error message
+        }
+    }
+</script>
+
+
+
+	<label for="pdp_category_type">PDP Category Type:</label>
+        <select id="pdp_category_type" name="pdp_category_type" required>
+            <option value="" disabled selected>Choose</option>
+            <option value="A">A</option>
+            <option value="A">B</option>
+        </select>
+
+
+        <label for="latitude">Latitude:</label>
+        <input type="number" step="0.0001" id="latitude" name="latitude" required placeholder="-90 to 90" value="{{ user_input.latitude if user_input else '' }}">
+
+        <label for="longitude">Longitude:</label>
+        <input type="number" step="0.0001" id="longitude" name="longitude" required placeholder="-180 to 180" value="{{ user_input.longitude if user_input else '' }}">
+
+        <label for="year">Year:</label>
+        <input type="number" id="year" name="year" required min="1900" max="2100" value="{{ user_input.year if user_input else '' }}">
+
+        <label for="month">Month:</label>
+        <input type="number" id="month" name="month" required min="1" max="12" value="{{ user_input.month if user_input else '' }}">
+
+        <label for="day">Day:</label>
+        <input type="number" id="day" name="day" required min="1" max="31" value="{{ user_input.day if user_input else '' }}">
+
+        <input type="submit" value="Submit">
+    </form>
+
+    {% if prediction %}
+        <h2>Predicted House Price: £{{ prediction }}</h2>
+    {% endif %}
+</body>
+</html>
